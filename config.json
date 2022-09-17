@@ -1,0 +1,16 @@
+{
+  "WEBOBJECT_XPATHS": {
+    "INPUT_EMAILADDRESS": "/html/body/div/main/div[2]/div[1]/form/div[1]/input",
+    "INPUT_ACCOUNTPASSWORD": "/html/body/div/main/div[2]/div[1]/form/div[2]/input",
+    "INTERACTION_AUTHBUTTON": "/html/body/div/main/div[2]/div[1]/form/div[3]/button"
+  },
+  "USER_CONFIG": {
+    "ACCOUNT_EMAILADDRESS": "",
+    "ACCOUNT_PASSWORD": ""
+  },
+  "PRODUCT_INFORMATION": {
+    "PRODUCT_VERSION": "v1.0",
+    "PRODUCT_REPOSITORY": "https://www.github.com/omerhuseyingul/LinkedEx",
+    "PRODUCT_DEVELOPER": "https://www.github.com/omerhuseyingul/"
+  }
+}
