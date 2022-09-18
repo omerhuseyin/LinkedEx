@@ -3,17 +3,13 @@
     using Console = Colorful.Console;
     using System.Drawing;
     using OpenQA.Selenium;
-    using System.Reflection;
     using OpenQA.Selenium.Chrome;
-    using OpenQA.Selenium;
     using WebDriverManager;
     using WebDriverManager.DriverConfigs.Impl;
     using WebDriverManager.Helpers;
-    using Newtonsoft.Json.Linq;
-    using OpenQA.Selenium.Firefox;
-    using System.Security.Cryptography.X509Certificates;
     using Newtonsoft.Json;
     using System.Diagnostics;
+    using System.Security;
 
     /* 
        │ Author       : Omer Huseyin GUL
@@ -21,14 +17,17 @@
        │ GitHub       : https://github.com/omerhuseyingul
     */
 
-    internal class Program
+    public class Program
     {
+        #region Config Variables and Global Variables
         public enum MessageType { Error, Information, Warning}
         public enum GetConfigType { USERNAME, PASSWORD }
         public static string? _accountEmailAdress;
         public static string? _accountPassword;
         public static IWebDriver driver;
+        #endregion
 
+        #region Main
         public static void Main(string[] args)
         {
             try
@@ -44,8 +43,9 @@
                 Environment.Exit(0);
             }
         }
+        #endregion
 
-
+        #region Get Config Function
         public static void GetConfig(GetConfigType dataType)
         {
             try
@@ -67,7 +67,9 @@
                 Environment.Exit(0);
             }  
         }
+        #endregion
 
+        #region Save Config Function
         static void SaveConfig(string targetValue)
         {
             try
@@ -81,7 +83,9 @@
                 return;
             }
         }
+        #endregion
 
+        #region ASCII Banner Writer
         public static void bannerWriter()
         {
             Console.Clear();
@@ -104,7 +108,9 @@
             Console.WriteWithGradient(consoleBanner, Color.Purple, Color.DarkBlue, 8);
             Console.Write("\n");
         }
+        #endregion
 
+        #region Selenium Authorization Function
         public static void SeleniumAuthorizationScript()
         {
             try
@@ -113,8 +119,8 @@
                
                 bannerWriter();
 
-                new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
 
+                new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
                 System.Console.WriteLine("[ ! ] Transaction Pending...");
                 System.Threading.Thread.Sleep(2500);
                 System.Console.WriteLine("[ ! ] Please Wait...");
@@ -138,12 +144,11 @@
 
                 Console.Write("[ > ] Email Address : ");
                 string emailAddress = System.Console.ReadLine();
-
-                Console.Write("[ > ] Password : ");
-                string password = System.Console.ReadLine();
+                SecureString encryptedPassword = inputMask();
+                string decryptedPassword = new System.Net.NetworkCredential(string.Empty, encryptedPassword).Password;
 
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div [1]/form/div[1]/input")).SendKeys(emailAddress);
-                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(password); TimeSpan.FromSeconds(10);
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(decryptedPassword); TimeSpan.FromSeconds(10);
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[3]/button")).Click(); TimeSpan.FromSeconds(10);
                 System.Threading.Thread.Sleep(1000);
                 var isTwoFactorEnabled = driver.FindElements(By.XPath("/html/body/div/main/div[2]/h1"));
@@ -192,12 +197,13 @@
                 System.Threading.Thread.Sleep(2500);
                 SeleniumAuthorizationScript();
             }
-
         }
+        #endregion
 
+        #region Driver Killer
         public static void DriverProcessTerminationService()
         {
-            try
+            try   
             {
                 Process[] ChromeIsOpen = Process.GetProcessesByName("chromedriver");
                 Process[] GeckoIsOpen = Process.GetProcessesByName("geckodriver");
@@ -214,9 +220,10 @@
                 SendMessage(mType: MessageType.Error, mContent: "Something went wrong.");
                 System.Threading.Thread.Sleep(2000);
             }
-
         }
+        #endregion
 
+        #region User-side operation selection menu
         public static void preAuthorization() 
         {
             try
@@ -260,7 +267,9 @@
             }
             
         }
+        #endregion
 
+        #region User interaction telemetry service
         public static void SendMessage(MessageType mType, string mContent)
         {
             try
@@ -297,6 +306,36 @@
                 System.Threading.Thread.Sleep(2500);
                 SeleniumAuthorizationScript();
             }
-        } 
+        }
+        #endregion
+
+        #region Password Mask Service
+        private static SecureString inputMask()
+        {
+            System.Console.Write("[ > ] Password : ");
+            SecureString securedPass = new SecureString();
+            ConsoleKeyInfo pressedKeyInformation;
+
+            do
+            {
+                pressedKeyInformation = Console.ReadKey(true);
+                if (!(char.IsControl(pressedKeyInformation.KeyChar)))
+                {
+                    securedPass.AppendChar(pressedKeyInformation.KeyChar);
+                    Console.Write("*");
+                }
+
+                else if (pressedKeyInformation.Key == ConsoleKey.Backspace && securedPass.Length > 0)
+                {
+                    securedPass.RemoveAt(securedPass.Length -1);
+                    Console.Write("\b \b");
+                }
+            }
+            while (pressedKeyInformation.Key != ConsoleKey.Enter);
+            {
+                return securedPass;
+            }
+        }
+        #endregion
     }
 }
