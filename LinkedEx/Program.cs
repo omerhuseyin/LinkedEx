@@ -12,6 +12,7 @@
     using Newtonsoft.Json.Linq;
     using OpenQA.Selenium.Firefox;
     using System.Security.Cryptography.X509Certificates;
+    using Newtonsoft.Json;
 
     /* 
        │ Author       : Omer Huseyin GUL
@@ -22,14 +23,35 @@
     internal class Program
     {
         public enum MessageType { Error, Information, Warning}
-        public string? _accountEmailAdress;
-        public string? _accountPassword;
+        public static string? _accountEmailAdress;
+        public static string? _accountPassword;
 
         public static void Main(string[] args)
         {
             Console.Title = "LinkedEx | LSA";
             bannerWriter();
             preAuthorization();
+        }
+
+        public enum GetConfigType { USERNAME, PASSWORD }
+
+        public static void GetConfig(GetConfigType dataType)
+        {
+            dynamic? json = JsonConvert.DeserializeObject(File.ReadAllText("config.json"));
+
+            if (json == null)
+            {
+                if (dataType == GetConfigType.USERNAME)                
+                    _accountEmailAdress = json.ACCOUNT_EMAILADDRESS;
+
+                else if (dataType == GetConfigType.PASSWORD)
+                    _accountPassword = json.ACCOUNT_PASSWORD; 
+            }
+        }
+
+        static void SaveConfig(string targetValue)
+        {
+            File.WriteAllText("config.json", JsonConvert.SerializeObject(new { targetValue }));
         }
 
         public static void bannerWriter()
