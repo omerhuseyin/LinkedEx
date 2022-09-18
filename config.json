@@ -6,10 +6,12 @@
     "INTERACTION_2FA_AUTHBUTTON" : "/html/body/div/main/div[2]/form/div[2]/button",
     "INTERACTION_AUTHBUTTON" : "/html/body/div/main/div[2]/div[1]/form/div[3]/button",
     "INFORMATION_2FA_STATUS" : "/html/body/div/main/div[2]/h1",
-    "INFORMATION_LOGGEDIN_USERNAME" : "/html/body/div[4]/div[3]/div/div/div[2]/div/div/div/div[1]/div[1]/a/div[2]",
+    "INFORMATION_LOGGEDIN_USERNAME" : "/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div/div/a/div[2]",
     "INFORMATION_LOGGEDIN_USERJOB" : "/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div[1]/div[1]/p",
     "API_USERNAME_ERROR" : "/html/body/div/main/div[2]/div[1]/form/div[1]/div",
-    "API_PASSWORD_ERROR" : "/html/body/div/main/div[2]/div[1]/form/div[2]/div"
+    "API_PASSWORD_ERROR" : "/html/body/div/main/div[2]/div[1]/form/div[2]/div",
+    "API_TWOFACTOR_ERROR" : "/html/body/div/main/div[1]/div[1]/span",
+    "API_TWOFACTOR_ERROR2" : "/html/body/div/main/div[2]/form/div[1]/div[1]"
   },
 
   "URLS":{
