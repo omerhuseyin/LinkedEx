@@ -24,36 +24,62 @@
     internal class Program
     {
         public enum MessageType { Error, Information, Warning}
+        public enum GetConfigType { USERNAME, PASSWORD }
         public static string? _accountEmailAdress;
         public static string? _accountPassword;
+        public static IWebDriver driver;
 
         public static void Main(string[] args)
         {
-            DriverProcessTerminationService();
-            Console.Title = "LinkedEx | LSA";
-            bannerWriter();
-            preAuthorization();
+            try
+            {
+                DriverProcessTerminationService();
+                Console.Title = "LinkedEx | LSA";
+                preAuthorization();
+            }
+            catch (Exception)
+            {
+                SendMessage(mType: MessageType.Error, mContent: "Initialize error.");
+                System.Threading.Thread.Sleep(2500);
+                Environment.Exit(0);
+            }
         }
 
-        public enum GetConfigType { USERNAME, PASSWORD }
 
         public static void GetConfig(GetConfigType dataType)
         {
-            dynamic? json = JsonConvert.DeserializeObject(File.ReadAllText("config.json"));
-
-            if (json == null)
+            try
             {
-                if (dataType == GetConfigType.USERNAME)                
-                    _accountEmailAdress = json.ACCOUNT_EMAILADDRESS;
+                dynamic? json = JsonConvert.DeserializeObject(File.ReadAllText("config.json"));
+                if (json == null)
+                {
+                    if (dataType == GetConfigType.USERNAME)
+                        _accountEmailAdress = json.ACCOUNT_EMAILADDRESS;
 
-                else if (dataType == GetConfigType.PASSWORD)
-                    _accountPassword = json.ACCOUNT_PASSWORD; 
+                    else if (dataType == GetConfigType.PASSWORD)
+                        _accountPassword = json.ACCOUNT_PASSWORD;
+                }
             }
+            catch (Exception)
+            {
+                SendMessage(mType: MessageType.Error, mContent: "[GET_ERROR] An error occurred while retrieving config information. Review the request and try again.");
+                System.Threading.Thread.Sleep(2500);
+                Environment.Exit(0);
+            }  
         }
 
         static void SaveConfig(string targetValue)
         {
-            File.WriteAllText("config.json", JsonConvert.SerializeObject(new { targetValue }));
+            try
+            {
+                File.WriteAllText("config.json", JsonConvert.SerializeObject(new { targetValue }));
+            }
+            catch (Exception)
+            {
+                SendMessage(mType: MessageType.Error, mContent: "[POST_ERROR] An error occurred while writing config file. Review the request and try again.");
+                System.Threading.Thread.Sleep(2500);
+                return;
+            }
         }
 
         public static void bannerWriter()
@@ -79,14 +105,13 @@
             Console.Write("\n");
         }
 
-        public static IWebDriver driver;
         public static void SeleniumAuthorizationScript()
         {
-            
+            try
+            {
                 int? twoFactorCode;
+               
                 bannerWriter();
-
-
 
                 new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
 
@@ -104,6 +129,7 @@
                 //        "--disable-logging", "--mute-audio", "--disable-extensions", "--disable-notifications", "--disable-application-cache",
                 //        "--no-sandbox", "--disable-crash-reporter", "--disable-dev-shm-usage", "--disable-gpu", "--ignore-certificate-errors",
                 //        "--disable-infobars", "--silent" });
+                //        "--disable-infobars", "--silent" });
 
                 IWebDriver driver = new ChromeDriver(service, options)
                 {
@@ -116,15 +142,14 @@
                 Console.Write("[ > ] Password : ");
                 string password = System.Console.ReadLine();
 
-                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[1]/input")).SendKeys(emailAddress);
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div [1]/form/div[1]/input")).SendKeys(emailAddress);
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(password); TimeSpan.FromSeconds(10);
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[3]/button")).Click(); TimeSpan.FromSeconds(10);
                 System.Threading.Thread.Sleep(1000);
-                //var alert = driver.FindElement(By.XPath("/html/body/div[2]/div/div[1]/div/div[2]/div")).Text;
                 var isTwoFactorEnabled = driver.FindElements(By.XPath("/html/body/div/main/div[2]/h1"));
-                
-                retry2FA:
-                
+
+            retry2FA:
+
                 if (isTwoFactorEnabled.Count != 0)
                 {
                     Console.Write("[ > ] 2FA Code : ");
@@ -143,33 +168,40 @@
 
                     else
                     {
-                    System.Threading.Thread.Sleep(5000);
-                    IWebElement loggedLogo = driver.FindElement(By.XPath("/html/body/div[5]/header/div/a/div/div/li-icon"));
-                    if (loggedLogo.Displayed != true)
-                    {
-                        SendMessage(mType: MessageType.Warning, "Authorization error. Script restarting...");
-                        SeleniumAuthorizationScript();
-                    }
+                        System.Threading.Thread.Sleep(5000);
+                        IWebElement loggedLogo = driver.FindElement(By.XPath("/html/body/div[5]/header/div/a/div/div/li-icon"));
+                        if (loggedLogo.Displayed != true)
+                        {
+                            SendMessage(mType: MessageType.Warning, "Authorization error. Script restarting...");
+                            SeleniumAuthorizationScript();
+                        }
 
-                    else
-                    {
-                        IWebElement accountName = driver.FindElement(By.XPath("/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div/div/a/div[2]"));
-                        SendMessage(mType: MessageType.Information, mContent: $"Authorization Successfully. Logged into to {accountName.Text}");
-                        Console.Title = $"LinkedEx | {accountName.Text}";
+                        else
+                        {
+                            IWebElement accountName = driver.FindElement(By.XPath("/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div/div/a/div[2]"));
+                            SendMessage(mType: MessageType.Information, mContent: $"Authorization Successfully. Logged into to {accountName.Text}");
+                            Console.Title = $"LinkedEx | {accountName.Text}";
+                        }
                     }
                 }
-                }
-             
+
+            }
+            catch (Exception)
+            {
+                SendMessage(mType: MessageType.Error, mContent: "[AUTH_ERROR] There was a problem with the authorization system. Please review the request and try again.");
+                System.Threading.Thread.Sleep(2500);
+                SeleniumAuthorizationScript();
+            }
 
         }
 
         public static void DriverProcessTerminationService()
         {
-            Process[] ChromeIsOpen = Process.GetProcessesByName("chromedriver");
-            Process[] GeckoIsOpen = Process.GetProcessesByName("geckodriver");
-
             try
             {
+                Process[] ChromeIsOpen = Process.GetProcessesByName("chromedriver");
+                Process[] GeckoIsOpen = Process.GetProcessesByName("geckodriver");
+
                 if (ChromeIsOpen.Length != 0)               
                     foreach (var process in Process.GetProcessesByName("chromedriver")) process.Kill();
                 
@@ -187,7 +219,8 @@
 
         public static void preAuthorization() 
         {
-           
+            try
+            {
                 bannerWriter();
 
                 string optionsMenu = @"
@@ -218,6 +251,13 @@
                         Environment.Exit(0);
                         break;
                 }
+            }
+            catch (Exception)
+            {
+                SendMessage(mType: MessageType.Error, mContent: "[GENERAL_ERROR] An unknown error has occurred. Please try the request again.");
+                System.Threading.Thread.Sleep(2500);
+                SeleniumAuthorizationScript();
+            }
             
         }
 
@@ -253,7 +293,9 @@
 
             catch (Exception)
             {
-                Environment.Exit(0);
+                SendMessage(mType: MessageType.Error, mContent: "[TELEMETRY_ERROR] An error occurred for the output. Please contact the developer.");
+                System.Threading.Thread.Sleep(2500);
+                SeleniumAuthorizationScript();
             }
         } 
     }
