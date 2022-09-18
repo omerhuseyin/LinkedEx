@@ -82,16 +82,11 @@
         public static IWebDriver driver;
         public static void SeleniumAuthorizationScript()
         {
-            try
-            {
+            
                 int? twoFactorCode;
                 bannerWriter();
 
-                Console.Write("[ > ] Email Address : ");
-                string emailAddress = System.Console.ReadLine();
 
-                Console.Write("[ > ] Password : ");
-                string password = System.Console.ReadLine();
 
                 new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
 
@@ -115,16 +110,57 @@
                     Url = "https://www.linkedin.com/login/"
                 };
 
+                Console.Write("[ > ] Email Address : ");
+                string emailAddress = System.Console.ReadLine();
+
+                Console.Write("[ > ] Password : ");
+                string password = System.Console.ReadLine();
+
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[1]/input")).SendKeys(emailAddress);
-                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(password);
-                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[3]/button")).Click();
-            }
-            catch (Exception)
-            {
-                SendMessage(mType: MessageType.Error, mContent: "Something went wrong.");
-                System.Threading.Thread.Sleep(2000);
-                SeleniumAuthorizationScript();
-            }
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(password); TimeSpan.FromSeconds(10);
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[3]/button")).Click(); TimeSpan.FromSeconds(10);
+                System.Threading.Thread.Sleep(1000);
+                //var alert = driver.FindElement(By.XPath("/html/body/div[2]/div/div[1]/div/div[2]/div")).Text;
+                var isTwoFactorEnabled = driver.FindElements(By.XPath("/html/body/div/main/div[2]/h1"));
+                
+                retry2FA:
+                
+                if (isTwoFactorEnabled.Count != 0)
+                {
+                    Console.Write("[ > ] 2FA Code : ");
+                    twoFactorCode = Int32.Parse(System.Console.ReadLine());
+                    driver.FindElement(By.XPath("/html/body/div/main/div[2]/form/div[1]/input[19]")).SendKeys(twoFactorCode.ToString()); TimeSpan.FromSeconds(10);
+                    driver.FindElement(By.XPath("/html/body/div/main/div[2]/form/div[2]/button")).Click(); TimeSpan.FromSeconds(10);
+                    var twoFactorAuthError1 = driver.FindElements(By.XPath("/html/body/div/main/div[2]/form/div[1]/div[1]"));
+                    var twoFactorAuthError2 = driver.FindElements(By.XPath("/html/body/div/main/div[1]/div[1]/span"));
+
+                    if (twoFactorAuthError1.Count != 0 || twoFactorAuthError2.Count != 0)
+                    {
+                        SendMessage(mType: MessageType.Error, mContent: "Wrong Two Factor Code! Please try again!");
+                        goto retry2FA;
+                    }
+
+
+                    else
+                    {
+                    System.Threading.Thread.Sleep(5000);
+                    IWebElement loggedLogo = driver.FindElement(By.XPath("/html/body/div[5]/header/div/a/div/div/li-icon"));
+                    if (loggedLogo.Displayed != true)
+                    {
+                        SendMessage(mType: MessageType.Warning, "Authorization error. Script restarting...");
+                        SeleniumAuthorizationScript();
+                    }
+
+                    else
+                    {
+                        IWebElement accountName = driver.FindElement(By.XPath("/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div/div/a/div[2]"));
+                        SendMessage(mType: MessageType.Information, mContent: $"Authorization Successfully. Logged into to {accountName.Text}");
+                        Console.Title = $"LinkedEx | {accountName.Text}";
+                    }
+                }
+                }
+             
+
         }
 
         public static void DriverProcessTerminationService()
@@ -151,8 +187,7 @@
 
         public static void preAuthorization() 
         {
-            try
-            {
+           
                 bannerWriter();
 
                 string optionsMenu = @"
@@ -183,13 +218,7 @@
                         Environment.Exit(0);
                         break;
                 }
-            }
-            catch (Exception)
-            {
-                SendMessage(mType: MessageType.Error, mContent: "Something went wrong.");
-                System.Threading.Thread.Sleep(2000);
-                preAuthorization();
-            }
+            
         }
 
         public static void SendMessage(MessageType mType, string mContent)
