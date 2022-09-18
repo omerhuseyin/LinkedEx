@@ -11,6 +11,7 @@
     using WebDriverManager.Helpers;
     using Newtonsoft.Json.Linq;
     using OpenQA.Selenium.Firefox;
+    using System.Security.Cryptography.X509Certificates;
 
     /* 
        │ Author       : Omer Huseyin GUL
@@ -23,16 +24,16 @@
         public enum MessageType { Error, Information, Warning}
         public string? _accountEmailAdress;
         public string? _accountPassword;
+
         public static void Main(string[] args)
         {
+            Console.Title = "LinkedEx | LSA";
             bannerWriter();
             preAuthorization();
         }
 
-
         public static void bannerWriter()
         {
-            Console.Title = "LinkedEx | LSA";
             Console.Clear();
             Console.Write("\n");
             string consoleBanner = @"
@@ -57,38 +58,49 @@
         public static IWebDriver driver;
         public static void SeleniumAuthorizationScript()
         {
-            bannerWriter();
-            Console.Write("[ > ] Email Address : ");
-            string emailAddress = System.Console.ReadLine();
-
-            Console.Write("[ > ] Password : ");
-            string password = System.Console.ReadLine();
-
-            new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
-
-            System.Console.WriteLine("[ ! ] Transaction Pending...");
-            System.Threading.Thread.Sleep(2500);
-            System.Console.WriteLine("[ ! ] Please Wait...");
-
-            ChromeDriverService service = ChromeDriverService.CreateDefaultService();
-            service.EnableVerboseLogging = false;
-            service.SuppressInitialDiagnosticInformation = true;
-            service.HideCommandPromptWindow = true;
-
-            ChromeOptions options = new ChromeOptions();
-            //options.AddArguments(new string[] {
-            //        "--disable-logging", "--mute-audio", "--disable-extensions", "--disable-notifications", "--disable-application-cache",
-            //        "--no-sandbox", "--disable-crash-reporter", "--disable-dev-shm-usage", "--disable-gpu", "--ignore-certificate-errors",
-            //        "--disable-infobars", "--silent" });
-
-            IWebDriver driver = new ChromeDriver(service, options)
+            try
             {
-                Url = "https://www.linkedin.com/login/"
-            };
+                int? twoFactorCode;
+                bannerWriter();
 
-            driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[1]/input")).SendKeys(emailAddress);
-            driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(password);
-            driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[3]/button")).Click();
+                Console.Write("[ > ] Email Address : ");
+                string emailAddress = System.Console.ReadLine();
+
+                Console.Write("[ > ] Password : ");
+                string password = System.Console.ReadLine();
+
+                new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
+
+                System.Console.WriteLine("[ ! ] Transaction Pending...");
+                System.Threading.Thread.Sleep(2500);
+                System.Console.WriteLine("[ ! ] Please Wait...");
+
+                ChromeDriverService service = ChromeDriverService.CreateDefaultService();
+                service.EnableVerboseLogging = false;
+                service.SuppressInitialDiagnosticInformation = true;
+                service.HideCommandPromptWindow = true;
+
+                ChromeOptions options = new ChromeOptions();
+                //options.AddArguments(new string[] {
+                //        "--disable-logging", "--mute-audio", "--disable-extensions", "--disable-notifications", "--disable-application-cache",
+                //        "--no-sandbox", "--disable-crash-reporter", "--disable-dev-shm-usage", "--disable-gpu", "--ignore-certificate-errors",
+                //        "--disable-infobars", "--silent" });
+
+                IWebDriver driver = new ChromeDriver(service, options)
+                {
+                    Url = "https://www.linkedin.com/login/"
+                };
+
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[1]/input")).SendKeys(emailAddress);
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(password);
+                driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[3]/button")).Click();
+            }
+            catch (Exception)
+            {
+                SendMessage(mType: MessageType.Error, mContent: "Something went wrong.");
+                System.Threading.Thread.Sleep(2000);
+                SeleniumAuthorizationScript();
+            }
         }
 
         public static void preAuthorization() 
@@ -117,11 +129,17 @@
                     case 1:
                         SeleniumAuthorizationScript();
                         break;
+
+                    case 2:
+                        bannerWriter();
+                        SendMessage(mType: MessageType.Information, mContent: "Shutting down...");
+                        System.Threading.Thread.Sleep(1000);
+                        Environment.Exit(0);
+                        break;
                 }
             }
             catch (Exception)
             {
-                throw;
                 SendMessage(mType: MessageType.Error, mContent: "Something went wrong.");
                 System.Threading.Thread.Sleep(2000);
                 preAuthorization();
