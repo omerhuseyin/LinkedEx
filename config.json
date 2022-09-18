@@ -1,16 +1,31 @@
 {
   "WEBOBJECT_XPATHS": {
-    "INPUT_EMAILADDRESS": "/html/body/div/main/div[2]/div[1]/form/div[1]/input",
-    "INPUT_ACCOUNTPASSWORD": "/html/body/div/main/div[2]/div[1]/form/div[2]/input",
-    "INTERACTION_AUTHBUTTON": "/html/body/div/main/div[2]/div[1]/form/div[3]/button"
+    "INPUT_EMAILADDRESS" : "/html/body/div/main/div[2]/div[1]/form/div[1]/input",
+    "INPUT_ACCOUNTPASSWORD" : "/html/body/div/main/div[2]/div[1]/form/div[2]/input",
+    "INPUT_MULTIFACTOR_SYSTEM" : "/html/body/div/main/div[2]/form/div[1]/input[19]",
+    "INTERACTION_2FA_AUTHBUTTON" : "/html/body/div/main/div[2]/form/div[2]/button",
+    "INTERACTION_AUTHBUTTON" : "/html/body/div/main/div[2]/div[1]/form/div[3]/button",
+    "INFORMATION_2FA_STATUS" : "/html/body/div/main/div[2]/h1",
+    "INFORMATION_LOGGEDIN_USERNAME" : "/html/body/div[4]/div[3]/div/div/div[2]/div/div/div/div[1]/div[1]/a/div[2]",
+    "INFORMATION_LOGGEDIN_USERJOB" : "/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div[1]/div[1]/p",
+    "API_USERNAME_ERROR" : "/html/body/div/main/div[2]/div[1]/form/div[1]/div",
+    "API_PASSWORD_ERROR" : "/html/body/div/main/div[2]/div[1]/form/div[2]/div"
   },
+
+  "URLS":{
+    "NAVIGATING_URL" : "https://www.linkedin.com/login/",
+    "MAINPAGE_URL" : "https://www.linkedin.com/feed/",
+    "LSA_URL" : "https://www.linkedin.com/skill-assessments/hub/quizzes/"
+  },
+
   "USER_CONFIG": {
-    "ACCOUNT_EMAILADDRESS": "",
-    "ACCOUNT_PASSWORD": ""
+    "ACCOUNT_EMAILADDRESS" : "",
+    "ACCOUNT_PASSWORD" : ""
   },
-  "PRODUCT_INFORMATION": {
-    "PRODUCT_VERSION": "v1.0",
-    "PRODUCT_REPOSITORY": "https://www.github.com/omerhuseyingul/LinkedEx",
+  
+  "PRODUCT_INFORMATION" : {
+    "PRODUCT_VERSION" : "v1.0",
+    "PRODUCT_REPOSITORY" : "https://www.github.com/omerhuseyingul/LinkedEx/",
     "PRODUCT_DEVELOPER": "https://www.github.com/omerhuseyingul/"
   }
 }
