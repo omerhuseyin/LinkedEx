@@ -13,6 +13,7 @@
     using OpenQA.Selenium.Firefox;
     using System.Security.Cryptography.X509Certificates;
     using Newtonsoft.Json;
+    using System.Diagnostics;
 
     /* 
        │ Author       : Omer Huseyin GUL
@@ -28,6 +29,7 @@
 
         public static void Main(string[] args)
         {
+            DriverProcessTerminationService();
             Console.Title = "LinkedEx | LSA";
             bannerWriter();
             preAuthorization();
@@ -123,6 +125,28 @@
                 System.Threading.Thread.Sleep(2000);
                 SeleniumAuthorizationScript();
             }
+        }
+
+        public static void DriverProcessTerminationService()
+        {
+            Process[] ChromeIsOpen = Process.GetProcessesByName("chromedriver");
+            Process[] GeckoIsOpen = Process.GetProcessesByName("geckodriver");
+
+            try
+            {
+                if (ChromeIsOpen.Length != 0)               
+                    foreach (var process in Process.GetProcessesByName("chromedriver")) process.Kill();
+                
+
+                if (GeckoIsOpen.Length != 0)                
+                    foreach (var process in Process.GetProcessesByName("geckodriver")) process.Kill();
+            }
+            catch (Exception) 
+            {
+                SendMessage(mType: MessageType.Error, mContent: "Something went wrong.");
+                System.Threading.Thread.Sleep(2000);
+            }
+
         }
 
         public static void preAuthorization() 
