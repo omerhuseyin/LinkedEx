@@ -32,8 +32,8 @@
         {
             try
             {
-                DriverProcessTerminationService();
                 Console.Title = "LinkedEx | LSA";
+                DriverProcessTerminationService();
                 preAuthorization();
             }
             catch (Exception)
@@ -46,7 +46,7 @@
         #endregion
 
         #region Get Config Function
-        public static void GetConfig(GetConfigType dataType)
+        public static string GetConfig(GetConfigType dataType)
         {
             try
             {
@@ -54,16 +54,19 @@
                 if (json == null)
                 {
                     if (dataType == GetConfigType.USERNAME)
-                        _accountEmailAdress = json.ACCOUNT_EMAILADDRESS;
+                        return _accountEmailAdress = json.ACCOUNT_EMAILADDRESS;
 
                     else if (dataType == GetConfigType.PASSWORD)
-                        _accountPassword = json.ACCOUNT_PASSWORD;
+                        return _accountPassword = json.ACCOUNT_PASSWORD;
                 }
+
+                return null;
             }
             catch (Exception)
             {
                 SendMessage(mType: MessageType.Error, mContent: "[GET_ERROR] An error occurred while retrieving config information. Review the request and try again.");
                 System.Threading.Thread.Sleep(2500);
+                return null;
                 Environment.Exit(0);
             }  
         }
@@ -146,6 +149,7 @@
                 string emailAddress = System.Console.ReadLine();
                 SecureString encryptedPassword = inputMask();
                 string decryptedPassword = new System.Net.NetworkCredential(string.Empty, encryptedPassword).Password;
+                Console.WriteLine();
 
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div [1]/form/div[1]/input")).SendKeys(emailAddress);
                 driver.FindElement(By.XPath("/html/body/div/main/div[2]/div[1]/form/div[2]/input")).SendKeys(decryptedPassword); TimeSpan.FromSeconds(10);
@@ -169,25 +173,21 @@
                         SendMessage(mType: MessageType.Error, mContent: "Wrong Two Factor Code! Please try again!");
                         goto retry2FA;
                     }
+                }
 
+                System.Threading.Thread.Sleep(5000);
+                IWebElement loggedLogo = driver.FindElement(By.XPath("/html/body/div[5]/header/div/a/div/div/li-icon"));
+                if (loggedLogo.Displayed != true)
+                {
+                    SendMessage(mType: MessageType.Warning, "Authorization error. Script restarting...");
+                    SeleniumAuthorizationScript();
+                }
 
-                    else
-                    {
-                        System.Threading.Thread.Sleep(5000);
-                        IWebElement loggedLogo = driver.FindElement(By.XPath("/html/body/div[5]/header/div/a/div/div/li-icon"));
-                        if (loggedLogo.Displayed != true)
-                        {
-                            SendMessage(mType: MessageType.Warning, "Authorization error. Script restarting...");
-                            SeleniumAuthorizationScript();
-                        }
-
-                        else
-                        {
-                            IWebElement accountName = driver.FindElement(By.XPath("/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div/div/a/div[2]"));
-                            SendMessage(mType: MessageType.Information, mContent: $"Authorization Successfully. Logged into to {accountName.Text}");
-                            Console.Title = $"LinkedEx | {accountName.Text}";
-                        }
-                    }
+                else
+                {
+                    IWebElement accountName = driver.FindElement(By.XPath("/html/body/div[5]/div[3]/div/div/div[2]/div/div/div/div/div/a/div[2]"));
+                    SendMessage(mType: MessageType.Information, mContent: $"Authorization Successfully. Logged into to {accountName.Text}");
+                    Console.Title = $"LinkedEx | {accountName.Text}";
                 }
 
             }
